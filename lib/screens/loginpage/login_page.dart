@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:machine_test/provider/auth_service_provider.dart';
@@ -24,6 +25,7 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _phoneController = TextEditingController();
+  FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -42,7 +44,10 @@ class _LoginPageState extends State<LoginPage>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
+      body: GestureDetector(
+        onTap: () {
+          _focusNode.unfocus();
+        },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -99,7 +104,9 @@ class _LoginPageState extends State<LoginPage>
                   ),
                 ),
               ),
-              SizedBox(height: 40.h,),
+              SizedBox(
+                height: 40.h,
+              ),
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
@@ -117,83 +124,105 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Widget _buildPhoneTab() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            const Text(
-              "Glad to See You!",
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Please provide your phone number',
-              style: TextStyle(fontSize: 15),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                hintText: 'Phone',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          const Text(
+            "Glad to See You!",
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Please provide your phone number',
+            style: TextStyle(fontSize: 15),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            focusNode: _focusNode,
+            inputFormatters: [LengthLimitingTextInputFormatter(10)],
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+              hintText: 'Phone',
 
-                // Add additional styling if needed
-              ),
+              // Add additional styling if needed
             ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              height: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+          ),
+          const SizedBox(height: 20),
+          Consumer<AuthServiceProvider>(
+            builder: (context, authProvider, child) {
+              return Container(
+                width: double.infinity,
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                onPressed: () async {
-                  if (_phoneController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Please enter your phone number')),
-                    );
-                    return;
-                  }
-                  final authProvider =
-                      Provider.of<AuthServiceProvider>(context, listen: false);
-                  try {
-                    await authProvider.sendOtpRequest(
+                child: authProvider.isLoading ? Center(child: CircularProgressIndicator(color: Colors.red,)):ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () async {
+                    // Check if the phone number field is empty
+                    if (_phoneController.text.isEmpty) {
+                      customErrorToast(
+                          context, 'Please enter your phone number');
+                      return;
+                    }
+
+                    // Validate phone number format (example regex for Indian phone numbers)
+                    final phoneNumberRegex = RegExp(r'^[6-9]\d{9}$');
+                    if (!phoneNumberRegex.hasMatch(_phoneController.text)) {
+                      customErrorToast(
+                          context, "Please enter a valid phone number");
+                      return;
+                    }
+
+                    customRandomToast(context, "Sending OTP...");
+
+
+
+                    try {
+                      await authProvider.sendOtpRequest(
                         phoneController: _phoneController,
                         deviceID: widget.deviceid,
-                        context: context);
-                    Navigator.push(
+                        context: context,
+                      );
+
+                      Navigator.push(
                         context,
                         CupertinoPageRoute(
-                            builder: (context) => OTPVerificationScreen(
-                                userId: authProvider.userID,
-                                deviceId: widget.deviceid,
-                                mobileNumber: _phoneController.text)));
-                  } catch (e) {}
-                },
-                child: const Text(
-                  'Send Code',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                          builder: (context) => OTPVerificationScreen(
+                            userId: authProvider.userID,
+                            deviceId: widget.deviceid,
+                            mobileNumber: _phoneController.text,
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      customErrorToast(
+                          context, "Failed to send OTP. Please try again.");
+                    }
+                  },
+                  child: const Text(
+                    'Send Code',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

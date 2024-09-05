@@ -4,15 +4,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:machine_test/screens/entrypoint/entry_point.dart';
-import 'package:machine_test/screens/loginpage/otp_verification.dart';
 import 'package:machine_test/widgets/custom_toast_messages.dart';
 
 import '../screens/registrationpage/registration.dart';
 
 class AuthServiceProvider with ChangeNotifier {
-  String _userID = '';
 
+  String _userID = '';
   String get userID => _userID;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
   Future<void> sendOtpRequest(
       {required TextEditingController phoneController,
@@ -20,7 +22,8 @@ class AuthServiceProvider with ChangeNotifier {
       required BuildContext context}) async {
     final mobileNumber = phoneController.text;
     final deviceId = deviceID;
-
+    _isLoading = true;
+    notifyListeners();
     try {
       final response = await http.post(
         Uri.parse('http://devapiv4.dealsdray.com/api/v2/user/otp'),
@@ -39,12 +42,18 @@ class AuthServiceProvider with ChangeNotifier {
 
         _userID = responseData['data']['userId'] ?? 'UnKnown';
         print('OTP request successful: ${responseData}');
+        _isLoading = false;
+        notifyListeners();
       } else {
         String errorMessage = 'Failed to send OTP request';
         throw Exception(errorMessage);
+
       }
     } catch (e) {
       throw Exception('Error occurred while sending OTP request: $e');
+    }finally{
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

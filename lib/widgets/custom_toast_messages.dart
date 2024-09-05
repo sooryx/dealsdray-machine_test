@@ -14,7 +14,8 @@ customSuccessToast(BuildContext context, String message) {
     type: ToastificationType.success,
     showProgressBar: true,
     borderRadius: BorderRadius.circular(30),
-    margin: const EdgeInsets.symmetric(horizontal: 50),
+    margin: EdgeInsets.symmetric(horizontal: 50.w,vertical: 30.h),
+
     dragToClose: true,
     closeButtonShowType: CloseButtonShowType.always,
     animationBuilder: (context, animation, alignment, child) {
@@ -38,7 +39,8 @@ customErrorToast(BuildContext context, String message) {
     type: ToastificationType.error,
     showProgressBar: true,
     borderRadius: BorderRadius.circular(30.r),
-    margin: EdgeInsets.symmetric(horizontal: 50.w),
+    margin: EdgeInsets.symmetric(horizontal: 50.w,vertical: 30.h),
+
     dragToClose: true,
     closeButtonShowType: CloseButtonShowType.always,
     animationBuilder: (context, animation, alignment, child) {
@@ -61,7 +63,8 @@ customRandomToast(BuildContext context, String message) {
     type: ToastificationType.info,
     showProgressBar: true,
     borderRadius: BorderRadius.circular(30.r),
-    margin: EdgeInsets.symmetric(horizontal: 50.w),
+    margin: EdgeInsets.symmetric(horizontal: 50.w,vertical: 30.h),
+
     dragToClose: true,
     closeButtonShowType: CloseButtonShowType.onHover,
     animationBuilder: (context, animation, alignment, child) {

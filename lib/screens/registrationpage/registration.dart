@@ -1,5 +1,6 @@
 import 'dart:convert'; // Import for JSON encoding
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http; // Import for HTTP requests
 import 'package:machine_test/provider/auth_service_provider.dart';
 import 'package:machine_test/screens/entrypoint/entry_point.dart';
@@ -40,6 +41,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       floatingActionButton: FloatingActionButton(
         foregroundColor: Colors.white,
         backgroundColor: Colors.red,
@@ -64,100 +66,100 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
         child: const Icon(Icons.arrow_forward),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.arrow_back_ios),
-                ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              child: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.arrow_back_ios),
               ),
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 50),
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: SizedBox(
-                      height: 250,
-                      width: double.infinity,
-                      child: Image.asset(
-                        'assets/images/download.jpeg',
-                        fit: BoxFit.cover,
-                      ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 50),
+                child: Opacity(
+                  opacity: 0.5,
+                  child: SizedBox(
+                    height: 250,
+                    width: double.infinity,
+                    child: Image.asset(
+                      'assets/images/download.jpeg',
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Let's Begin!",
-                      style:
-                      TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Let's Begin!",
+                    style:
+                    TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Please enter your credentials to proceed',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  SizedBox(height: 40.h),
+
+                  TextField(
+                    controller: _emailController,
+                    textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      hintText: 'Your Email',
+                      // border: OutlineInputBorder(
+                      //   borderRadius: BorderRadius.circular(8),
+                      // ),
+                      // contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Please enter your credentials to proceed',
-                      style: TextStyle(fontSize: 15),
+                  ),
+                   SizedBox(height: 20.h),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: _obscureText,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      hintText: 'Create Password',
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _obscureText = !_obscureText;
+                            });
+                          },
+                          icon: Icon(Icons.visibility)),
                     ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _emailController,
-                      textInputAction: TextInputAction.next,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        hintText: 'Your Email',
-                        // border: OutlineInputBorder(
-                        //   borderRadius: BorderRadius.circular(8),
-                        // ),
-                        // contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
+                  ),
+                   SizedBox(height: 20.h),
+                  TextField(
+                    controller: _referralCodeController,
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(
+                      hintText: 'Referral Code (Optional)',
+                      // border: OutlineInputBorder(
+                      //   borderRadius: BorderRadius.circular(8),
+                      // ),
+                      // contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: _obscureText,
-                      textInputAction: TextInputAction.next,
-                      decoration: InputDecoration(
-                        hintText: 'Create Password',
-                        suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _obscureText = !_obscureText;
-                              });
-                            },
-                            icon: Icon(Icons.visibility)),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _referralCodeController,
-                      textInputAction: TextInputAction.done,
-                      decoration: const InputDecoration(
-                        hintText: 'Referral Code (Optional)',
-                        // border: OutlineInputBorder(
-                        //   borderRadius: BorderRadius.circular(8),
-                        // ),
-                        // contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
